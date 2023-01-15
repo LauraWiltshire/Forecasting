@@ -60,6 +60,28 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
 accuracy(forecast(linear_model, h = 8), out_sample_data)
 
 # Fitting an exponential smoothing model
-# error (additive or multiplicative; A or M)
-# trend (none, additive or multiplicative; N, A, or M)
-# seasonality (none, additive or multiplicative; N, A, or M)
+# Simple exponential smoothing
+ANN <- ets(in_sample_data, model = "ANN")
+# Holt's exponential smoothing with linear trend
+AAN <- ets(in_sample_data, model = "AAN", damped = FALSE)
+# Automatic forecasting chosen best
+ANA <- ets(in_sample_data, model = "ANA", damped = FALSE)
+# Damped exponential smoothing
+AANd <- ets(in_sample_data, model = "AAN", damped = TRUE)
+# Holt-Winter's exponential smoothing (additive seasonality)
+AAAd <- ets(in_sample_data, model = "AAA", damped = FALSE)
+# Hot-Winter's exponential smoothing (multiplicative seasonality)
+MAMd <- ets(in_sample_data, model = "MAM", damped = TRUE)
+
+# Comparing exponential smoothing models
+plot(data, ylim = c(3200, 6000))
+lines(forecast(ANN, h = 8)$mean, col = "orange", lty = 4)
+lines(forecast(AAN, h = 8)$mean, col = "grey", lty = 4)
+lines(forecast(ANA, h = 8)$mean, col = "pink", lty = 4)
+lines(forecast(AANd, h = 8)$mean, col = "green", lty = 4)
+lines(forecast(AAAd, h = 8)$mean, col = "blue", lty = 4)
+lines(forecast(MAMd, h = 8)$mean, col = "purple", lty = 4)
+
+#cheeky autofit
+fit <- ets(in_sample_data)
+summary(fit)
