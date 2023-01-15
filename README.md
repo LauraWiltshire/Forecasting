@@ -1,7 +1,8 @@
 # Forecasting Project
 
 ## Introduction <a name="introduction"></a>
-This is a project for comparing different forecasting models using R. It utilises time-series data from the M3 competition package (MComp). Source: http://forecasters.org/resources/time-series-data/m3-competition/.
+This is a project for comparing different forecasting models using R. It utilises time-series data from the M3 competition package (MComp). 
+Source: http://forecasters.org/resources/time-series-data/m3-competition/.
 
 ## Part 1: Manual Modelling
 Part 1 of the project uses the time-series with the ID 1357. This quarterly data is under the category "demographic", measuring employment in Finland from 1978 to 1996. It is a time series of length n = 62 for historical data, and length h = 8 for the future data.
