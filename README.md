@@ -1,5 +1,5 @@
-# Forecasting
-This is a Forecasting project I am working on for MSc Business Analytics, University of Bath.
+# Forecasting Project
+This is a forecasting project I am working on for MSc Business Analytics, University of Bath.
 
 # Table of contents
 1. [Introduction](#introduction)
@@ -17,7 +17,11 @@ This is a Forecasting project I am working on for MSc Business Analytics, Univer
     6. [Benchmarking](#subparagraph2)
 
 ## This is the introduction <a name="introduction"></a>
-Some introduction text, formatted in heading 2 style
+This project uses time-series data from the M3 competition package (MComp).
+Part 1 uses the time-series with the ID 1357. This quarterly data is under the category "demographic", measuring employment in Finland from 1978 to 1996. It is a time series of length n = 62 for historical data, and length h = 8 for the future data.
+Part 2 uses
+Source: http://forecasters.org/resources/time-series-data/m3-competition/.
+
 
 ## Part 1 <a name="paragraph1"></a>
 The first paragraph text
