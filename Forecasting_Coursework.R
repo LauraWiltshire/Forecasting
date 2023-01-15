@@ -29,6 +29,9 @@ in_sample_data <- M3[[1357]]$x
 out_sample_data <- M3[[1357]]$xx
 plot(data)
 
+# Length of steps ahead to forecast (h) = length of test data (h = 8)
+h = length(out_sample_data)
+
 # Decomposition of the in-sample data
 components_data_a <- decompose(in_sample_data)  # additive decomposition
 plot(components_data_a)
@@ -43,3 +46,13 @@ plot(components_data_m)
 # are closely centered around 1.00, however the additive model yields a much higher
 # range and standard deviation, visually. 
 # A multiplicative model fits the decomposition better.
+
+# Fitting a linear model to in-sample time series (incl trend & seasonality)
+linear_model <- tslm(in_sample_data ~ trend + season)
+summary(linear_model)
+plot(forecast(linear_model, h = 8, level = c(0.8, 0.95)))
+lines(out_sample_data, lty = 2, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
+
