@@ -19,10 +19,17 @@
 # Loading libraries
 library(fpp2)
 library(Mcomp)
+library(forecast)
+library(ggplot2)
+library(magrittr)
 
-# Exploring in-sample data from series ID 1357 of the M3 competition.
+# Loading the data from series ID 1357 of the M3 competition 
+data <- M3[[1357]]
 in_sample_data <- M3[[1357]]$x
-plot(in_sample_data)
+out_sample_data <- M3[[1357]]$xx
+plot(data)
+
+# Decomposition of the in-sample data
 components_data_a <- decompose(in_sample_data)  # additive decomposition
 plot(components_data_a)
 components_data_m <- decompose(in_sample_data, 
