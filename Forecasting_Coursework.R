@@ -20,17 +20,14 @@
 library(fpp2)
 library(Mcomp)
 library(forecast)
-library(ggplot2)
-library(magrittr)
+library(tidyverse)
 
 # Loading the data from series ID 1357 of the M3 competition 
 data <- M3[[1357]]
+glimpse(data)
 in_sample_data <- M3[[1357]]$x
 out_sample_data <- M3[[1357]]$xx
 plot(data)
-
-# Length of steps ahead to forecast (h) = length of test data (h = 8)
-h = length(out_sample_data)
 
 # Decomposition of the in-sample data
 components_data_a <- decompose(in_sample_data)  # additive decomposition
@@ -47,6 +44,9 @@ plot(components_data_m)
 # range and standard deviation, visually. 
 # A multiplicative model fits the decomposition better.
 
+# Length of steps ahead to forecast is equal to the length of the test data
+h = length(out_sample_data)  # h = 8 
+
 # Fitting a linear model to in-sample time series (incl trend & seasonality)
 linear_model <- tslm(in_sample_data ~ trend + season)
 summary(linear_model)
@@ -56,3 +56,10 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        col = c("black", "black", "#31A9F6"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
+# Validating performance
+accuracy(forecast(linear_model, h = 8), out_sample_data)
+
+# Fitting an exponential smoothing model
+# error (additive or multiplicative; A or M)
+# trend (none, additive or multiplicative; N, A, or M)
+# seasonality (none, additive or multiplicative; N, A, or M)
