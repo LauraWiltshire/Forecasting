@@ -2,18 +2,12 @@
 
 # Part 1: Manual Modelling
 
-# This uses quaterly time series data from the M3 competition (package Mcomp)
-# My student ID ends in a 3, so the Series ID I will use is 1357.
-
-# I shall manually select three models, for fitting data and producing forecasts.
 # One regression model (with trend and seasonality components)
 # One exponential smoothing model
 # One ARIMA model
 
-# I will perform data exploration using graphs, statistical descriptive 
-# summaries, and statistical tests.
-# This includes residual diagnostics, and prediction intervals (80% and 95% CI)
-# for the next 8 quaters
+# Including data exploration using graphs, statistics, residual diagnostics, 
+# with prediction intervals (80% and 95% CI) for the next forecasted 8 quaters
 
 # Loading libraries
 library(fpp2)
@@ -29,18 +23,14 @@ out_sample_data <- M3[[1357]]$xx
 plot(data)
 
 # Decomposition of the in-sample data
-components_data_a <- decompose(in_sample_data)  # additive decomposition
+components_data_a <- decompose(in_sample_data)  # additive
 plot(components_data_a)
 components_data_m <- decompose(in_sample_data, 
-                               type = "multiplicative")  # multiplicative decomposition
+                               type = "multiplicative")  # multiplicative
 plot(components_data_m)
-# From the components plot, it appears that trend is a curved, non-linear line,
-# so trend is likely multiplicative.
-# There are similar widths and heights of seasonal periods over time,
-# so seasonality is likely additive.
-# The decomposition of the multiplicative time series shows the residuals (random)
-# are closely centered around 1.00, however the additive model yields a much higher
-# range and standard deviation, visually. 
+# Trend is non-linear, possibly multiplicative.
+# Seasonality is possibly additive.
+# Multiplicative residuals < additive model residuals
 # A multiplicative model fits the decomposition better.
 
 # Length of steps ahead to forecast is equal to the length of the test data
@@ -55,38 +45,39 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        col = c("black", "black", "#31A9F6"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
-# Validating performance
+# Validating performance of linear model
 accuracy(forecast(linear_model, h = 8), out_sample_data)
 
 # Fitting an exponential smoothing model
+# "A" = additive, "M" = multiplicative, "N" = none, "Z" = automatic
+# Better fitting models have lower AIC
 
-# Trying several models, to find the lowest AIC
 # First, changing the error type ("A" or "M")
-ANN <- ets(in_sample_data, model = "ANN") # Simple exponential smoothing
-summary(ANN)  # AIC = 900.9128
+ANN <- ets(in_sample_data, model = "ANN") 
+  summary(ANN)  # AIC = 900.9128
 MNN <- ets(in_sample_data, model = "MNN")
-summary(MNN)  # AIC = 901.4817
-# additive error type yields smaller AIC, therefore is a better fit
+  summary(MNN)  # AIC = 901.4817
+# Error better as A than M
 
 # Secondly, changing the trend type ("A","M" or "N")
-AAN <- ets(in_sample_data, model = "AAN") # Holt's exponential smoothing
-summary(AAN)  #AIC = 902.0294
+AAN <- ets(in_sample_data, model = "AAN")
+  summary(AAN)  #AIC = 902.0294
 # AMN is a forbidden model type with the ets() function, so we will compare
 # different trend types with a baseline multiplicative error instead
 MAN <- ets(in_sample_data, model = "MAN")
-summary(MAN)  # AIC = 904.0645
+  summary(MAN)  # AIC = 904.0645
 MMN <- ets(in_sample_data, model = "MMN")
-summary(MMN)  # AIC = 903.6495
+  summary(MMN)  # AIC = 903.6495
 MNM <- ets(in_sample_data, model = "MNM")
-summary(MNM)  # AIC = 835.4538
-# Trend = "none" gives the smallest AIC, therefore is a better fit
+  summary(MNM)  # AIC = 835.4538
+# Trend better as N than M/A
 
 # Thirdly, changing the season type ("A", "M", or "N")
 ANA <- ets(in_sample_data, model = "ANA")
-summary(ANA)  # AIC = 831.2607, the lowest AIC
+  summary(ANA)  # AIC = 831.2607, lowest AIC
 # ANM is a forbidden model combination 
 ANN <- ets(in_sample_data, model = "ANN")
-summary(ANN)  # AIC = 900.9128
+  summary(ANN)  # AIC = 900.9128
 
 # Automatically selecting error, trend, and seasonality types 
 # also selects ANA as the best combination of component types for the model
@@ -108,12 +99,12 @@ accuracy(forecast(MNM, h = 8), out_sample_data)
 # Residual diagnostics for ANA and MNM exponential smoothing models
 checkresiduals(MNM)
 checkresiduals(ANA)
-# As found during decomposition, a multiplicative model has much smaller residuals
-# Even though the ANA model had a slightly "better" AIC score, it has huge residuals
-# Histogram: The left tails of the MNM and ANA residual distributions are too long for a normal distribution
-# Portmanteau tests: MNM and ANA residuals are distinguishable from a white noise series
+# A multiplicative model has much smaller residuals
+# ANA model had a slightly "better" AIC score, but MNM has better residuals 
+# Histogram: negative skew of the MNM and ANA residual distributions 
+# Portmanteau tests: MNM & ANA residuals distinguishable from white noise series
 
-# Plotting MNM exponential smoothing model forecast with 80% and 90% confidence intervals
+# Plotting MNM ES model forecast, 80% & 90% confidence intervals
 plot(forecast(MNM, h = 8, level = c(0.8, 0.95)))
 lines(out_sample_data, lty = 2, lwd = 2)
 legend("topright", c("Historical data", "Actual future data", "Forecast data"),
