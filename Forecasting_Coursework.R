@@ -106,7 +106,6 @@ accuracy(forecast(ANA, h = 8), out_sample_data)
 accuracy(forecast(MNM, h = 8), out_sample_data)
 
 # Residual diagnostics for ANA and MNM exponential smoothing models
-
 checkresiduals(MNM)
 checkresiduals(ANA)
 # As found during decomposition, a multiplicative model has much smaller residuals
@@ -114,5 +113,12 @@ checkresiduals(ANA)
 # Histogram: The left tails of the MNM and ANA residual distributions are too long for a normal distribution
 # Portmanteau tests: MNM and ANA residuals are distinguishable from a white noise series
 
-# One ARIMA model
+# Plotting MNM exponential smoothing model forecast with 80% and 90% confidence intervals
+plot(forecast(MNM, h = 8, level = c(0.8, 0.95)))
+lines(out_sample_data, lty = 2, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
+
+# ARIMA model
 
