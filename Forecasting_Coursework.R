@@ -60,7 +60,7 @@ accuracy(forecast(linear_model, h = 8), out_sample_data)
 
 # Fitting an exponential smoothing model
 
-# Trying several SES models
+# Trying several models, to find the lowest AIC
 # First, changing the error type ("A" or "M")
 ANN <- ets(in_sample_data, model = "ANN") # Simple exponential smoothing
 summary(ANN)  # AIC = 900.9128
@@ -106,18 +106,13 @@ accuracy(forecast(ANA, h = 8), out_sample_data)
 accuracy(forecast(MNM, h = 8), out_sample_data)
 
 # Residual diagnostics for ANA and MNM exponential smoothing models
-res_ANA <- residuals(ANA)
-res_MNM <- residuals(MNM)
-lines(res_MNM)
+
+checkresiduals(MNM)
+checkresiduals(ANA)
 # As found during decomposition, a multiplicative model has much smaller residuals
 # Even though the ANA model had a slightly "better" AIC score, it has huge residuals
-
-# Histogram of residuals for MNM
-gghistogram(res_MNM) +
-  ggtitle("Histogram of residuals for MNM")
-# The left tail of this distribution is too long for a normal distribution
-
-
+# Histogram: The left tails of the MNM and ANA residual distributions are too long for a normal distribution
+# Portmanteau tests: MNM and ANA residuals are distinguishable from a white noise series
 
 # One ARIMA model
 
