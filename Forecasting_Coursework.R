@@ -82,6 +82,7 @@ lines(forecast(AANd, h = 8)$mean, col = "green", lty = 4)
 lines(forecast(AAAd, h = 8)$mean, col = "blue", lty = 4)
 lines(forecast(MAMd, h = 8)$mean, col = "purple", lty = 4)
 
-#cheeky autofit
+
+# cheeky autofit
 fit <- ets(in_sample_data)
 summary(fit)
