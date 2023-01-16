@@ -1,5 +1,4 @@
-# Welcome to my Forecasting Coursework
-
+# WORK IN PROGRESS ... 
 
 # Part 1: Manual Modelling
 
@@ -60,29 +59,65 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
 accuracy(forecast(linear_model, h = 8), out_sample_data)
 
 # Fitting an exponential smoothing model
-# Simple exponential smoothing
+
+# Trying several SES models
+# First, changing the error type ("A" or "M")
+ANN <- ets(in_sample_data, model = "ANN") # Simple exponential smoothing
+summary(ANN)  # AIC = 900.9128
+MNN <- ets(in_sample_data, model = "MNN")
+summary(MNN)  # AIC = 901.4817
+# additive error type yields smaller AIC, therefore is a better fit
+
+# Secondly, changing the trend type ("A","M" or "N")
+AAN <- ets(in_sample_data, model = "AAN") # Holt's exponential smoothing
+summary(AAN)  #AIC = 902.0294
+# AMN is a forbidden model type with the ets() function, so we will compare
+# different trend types with a baseline multiplicative error instead
+MAN <- ets(in_sample_data, model = "MAN")
+summary(MAN)  # AIC = 904.0645
+MMN <- ets(in_sample_data, model = "MMN")
+summary(MMN)  # AIC = 903.6495
+MNM <- ets(in_sample_data, model = "MNM")
+summary(MNM)  # AIC = 835.4538
+# Trend = "none" gives the smallest AIC, therefore is a better fit
+
+# Thirdly, changing the season type ("A", "M", or "N")
+ANA <- ets(in_sample_data, model = "ANA")
+summary(ANA)  # AIC = 831.2607, the lowest AIC
+# ANM is a forbidden model combination 
 ANN <- ets(in_sample_data, model = "ANN")
-# Holt's exponential smoothing with linear trend
-AAN <- ets(in_sample_data, model = "AAN", damped = FALSE)
-# Automatic forecasting chosen best
-ANA <- ets(in_sample_data, model = "ANA", damped = FALSE)
-# Damped exponential smoothing
-AANd <- ets(in_sample_data, model = "AAN", damped = TRUE)
-# Holt-Winter's exponential smoothing (additive seasonality)
-AAAd <- ets(in_sample_data, model = "AAA", damped = FALSE)
-# Hot-Winter's exponential smoothing (multiplicative seasonality)
-MAMd <- ets(in_sample_data, model = "MAM", damped = TRUE)
+summary(ANN)  # AIC = 900.9128
 
-# Comparing exponential smoothing models
-plot(data, ylim = c(3200, 6000))
-lines(forecast(ANN, h = 8)$mean, col = "orange", lty = 4)
-lines(forecast(AAN, h = 8)$mean, col = "grey", lty = 4)
-lines(forecast(ANA, h = 8)$mean, col = "pink", lty = 4)
-lines(forecast(AANd, h = 8)$mean, col = "green", lty = 4)
-lines(forecast(AAAd, h = 8)$mean, col = "blue", lty = 4)
-lines(forecast(MAMd, h = 8)$mean, col = "purple", lty = 4)
+# Automatically selecting error, trend, and seasonality types 
+# also selects ANA as the best combination of component types for the model
+ZZZ <- ets(in_sample_data, model = "ZZZ")
+summary(ZZZ)
+
+# Graphically comparing forecasts produced by MNM and ANA exponential smoothing models
+plot(data, ylim = c(3600, 6000))
+lines(forecast(ANA, h = 8)$mean, col = "blue", lty = 1, lwd = 2)
+lines(forecast(MNM, h = 8)$mean, col = "green", lty = 1, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "MNM forecast data", "ANA forecast data"),
+       col = c("black", "red", "green", "blue"),
+       lwd = c(1, 1, 2, 2), lty = c(1, 1, 1, 1))
+
+# Validating ANA and MNM exponential smoothing models, against the training and test sets
+accuracy(forecast(ANA, h = 8), out_sample_data)
+accuracy(forecast(MNM, h = 8), out_sample_data)
+
+# Residual diagnostics for ANA and MNM exponential smoothing models
+res_ANA <- residuals(ANA)
+res_MNM <- residuals(MNM)
+lines(res_MNM)
+# As found during decomposition, a multiplicative model has much smaller residuals
+# Even though the ANA model had a slightly "better" AIC score, it has huge residuals
+
+# Histogram of residuals for MNM
+gghistogram(res_MNM) +
+  ggtitle("Histogram of residuals for MNM")
+# The left tail of this distribution is too long for a normal distribution
 
 
-# cheeky autofit
-fit <- ets(in_sample_data)
-summary(fit)
+
+# One ARIMA model
+
