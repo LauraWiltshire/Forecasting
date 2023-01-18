@@ -112,4 +112,11 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
 # ARIMA model
+# Plot the data. Identify any unusual observations.
+# If necessary, transform the data (using a log or a Box-Cox transformation) to stabilise the variance.
+# If the data are non-stationary: take first differences of the data until the data are stationary.
+# Examine the ACF/PACF: Is an AR(p) or MA(q) model appropriate?
+# Try your chosen model(s), and use the AICc to search for a better model.
+# Check the residuals from your chosen model by plotting the ACF of the residuals, and doing a portmanteau test of the residuals. If they do not look like white noise, try a modified model.
+# Once the residuals look like white noise, calculate forecasts.
 
