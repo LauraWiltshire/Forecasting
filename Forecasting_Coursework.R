@@ -14,6 +14,7 @@ library(fpp2)
 library(Mcomp)
 library(forecast)
 library(tidyverse)
+library(tseries)
 
 # Loading the data from series ID 1357 of the M3 competition 
 data <- M3[[1357]]
@@ -111,10 +112,33 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        col = c("black", "black", "#31A9F6"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
+
 # ARIMA model
 # Plot the data. Identify any unusual observations.
+tsdisplay(in_sample_data)
+
 # If necessary, transform the data (using a log or a Box-Cox transformation) to stabilise the variance.
+
 # If the data are non-stationary: take first differences of the data until the data are stationary.
+nsdiffs(in_sample_data)  # required degree of seasonal differencing is 1
+season_diff <- diff(in_sample_data, 1)
+ndiffs(season_diff, test = "adf")  # no further differencing required
+
+# Plot of time-series data before and after differencing
+diff_vs_no_diff <- cbind("Original data" = in_sample_data,
+              "Seasonal differences" = diff(in_sample_data, 1))
+autoplot(diff_vs_no_diff, facets=TRUE) +
+  xlab("Time") +
+  ggtitle("Employment")
+
+# ACF and PACF plots for differenced data
+tsdisplay(diff(in_sample_data, 1))
+# estimated AR(1) or AR(5) from PACF
+# estimated seasonal AR, 1
+# estimated I terms, 1
+# estimated MA(1) from ACF
+# estimated seasonal MA, 4?
+
 # Examine the ACF/PACF: Is an AR(p) or MA(q) model appropriate?
 # Try your chosen model(s), and use the AICc to search for a better model.
 # Check the residuals from your chosen model by plotting the ACF of the residuals, and doing a portmanteau test of the residuals. If they do not look like white noise, try a modified model.
