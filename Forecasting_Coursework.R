@@ -120,40 +120,41 @@ tsdisplay(in_sample_data)
 # If necessary, transform the data (using a log or a Box-Cox transformation) 
 # to stabilise the variance.
 
-# If the data are non-stationary: take first differences of the data until the 
-# data are stationary.
-# auto-estimates of degrees of differencing
-nsdiffs(in_sample_data)  # required degree of seasonal differencing is 1
-season_diff <- diff(in_sample_data, 1)
-ndiffs(season_diff)  # "no further differencing required"
+ndiffs(in_sample_data)  # "I(1) series"
+nsdiffs(in_sample_data)  # required degree of differencing is 1
 
-# Test auto-estimated differenced data for stationarity
-adf.test(in_sample_data)
-adf.test(season_diff)  # p = 0.1848 
-# need for differencing, not accounted for by ndiffs()
+# The data are non-stationary, with seasonality, so we will take the seasonal 
+# difference 
+in_sample_data %>%
+  diff(lag = 4) %>%  # diff at lag 4
+  tsdisplay()
 
-# Apply quarterly differencing, as it is quarterly data
-quarterly_diff <- diff(in_sample_data, 4)
-adf.test(quarterly_diff)  # p = 0.01877
+# Still appears non-stationary, so take an additional first difference
+in_sample_data %>%
+  diff(lag = 4) %>% #  seasonal diff
+  diff() %>% # first diff 
+  tsdisplay()
 
-# Apply both trend (1) and quarterly (4) differencing
-tre_qua_diff <- diff(diff(in_sample_data, 1), 4)
-adf.test(tre_qua_diff)  # "p-value smaller than printed p-value" - stationary
-kpss.test(tre_qua_diff) # "p-value greater than printed p-value" - stationary
+differenced <- diff(diff(in_sample_data, 4), 1)
+
+# Test differenced data for stationarity
+adf.test(differenced)  # p-value smaller than printed value, so non-stationary
+kpss.test(differenced)  # p-value greater than printed value, so non-stationary
+
 
 # Plot of time-series data before and after differencing
-diff_vs_no_diff <- cbind("Original data" = in_sample_data,
-              "Trend differencing" = diff(in_sample_data, 1),
-              "Quarterly differencing" = quarterly_diff,
-              "Quarterly and Trend" = tre_qua_diff)
+diff_vs_no_diff <- cbind("Original Data" = in_sample_data,
+              "Seasonal Differencing" = diff(in_sample_data, 4),
+              "First Difference" = diff(in_sample_data, 1),
+              "Seasonal and First" = differenced)
 autoplot(diff_vs_no_diff, facets=TRUE) +
   xlab("Time") +
   ggtitle("Employment")
 
 # ACF and PACF plots for first and quarterly differenced data
-tsdisplay(diff(diff(in_sample_data, 1),4))
-
-# Hi its me
+tsdisplay(differenced)
+# ACF: significant spikes at lags 3, 4, 5, 9, 13
+# PCF: significant spikes at lags 3, 4, 8, 9, 12
 
 # Examine the ACF/PACF: Is an AR(p) or MA(q) model appropriate?
 # For it to be an AR(p) model 
