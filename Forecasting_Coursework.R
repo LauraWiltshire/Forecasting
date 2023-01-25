@@ -14,6 +14,7 @@ library(fpp2)
 library(Mcomp)
 library(forecast)
 library(tidyverse)
+library(tseries)
 
 # Loading the data from series ID 1357 of the M3 competition 
 data <- M3[[1357]]
@@ -113,10 +114,54 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
 
 # ARIMA model
 # Plot the data. Identify any unusual observations.
-# If necessary, transform the data (using a log or a Box-Cox transformation) to stabilise the variance.
-# If the data are non-stationary: take first differences of the data until the data are stationary.
+tsdisplay(in_sample_data)
+# ACF slow fall, PACF significant at lag 1, so AR(1)
+
+# If necessary, transform the data (using a log or a Box-Cox transformation) 
+# to stabilise the variance.
+
+# If the data are non-stationary: take first differences of the data until the 
+# data are stationary.
+# auto-estimates of degrees of differencing
+nsdiffs(in_sample_data)  # required degree of seasonal differencing is 1
+season_diff <- diff(in_sample_data, 1)
+ndiffs(season_diff)  # "no further differencing required"
+
+# Test auto-estimated differenced data for stationarity
+adf.test(in_sample_data)
+adf.test(season_diff)  # p = 0.1848 
+# need for differencing, not accounted for by ndiffs()
+
+# Apply quarterly differencing, as it is quarterly data
+quarterly_diff <- diff(in_sample_data, 4)
+adf.test(quarterly_diff)  # p = 0.01877
+
+# Apply both trend (1) and quarterly (4) differencing
+tre_qua_diff <- diff(diff(in_sample_data, 1), 4)
+adf.test(tre_qua_diff)  # "p-value smaller than printed p-value" - stationary
+kpss.test(tre_qua_diff) # "p-value greater than printed p-value" - stationary
+
+# Plot of time-series data before and after differencing
+diff_vs_no_diff <- cbind("Original data" = in_sample_data,
+              "Trend differencing" = diff(in_sample_data, 1),
+              "Quarterly differencing" = quarterly_diff,
+              "Quarterly and Trend" = tre_qua_diff)
+autoplot(diff_vs_no_diff, facets=TRUE) +
+  xlab("Time") +
+  ggtitle("Employment")
+
+# ACF and PACF plots for first and quarterly differenced data
+tsdisplay(diff(diff(in_sample_data, 1),4))
+
+# Hi its me
+
 # Examine the ACF/PACF: Is an AR(p) or MA(q) model appropriate?
+# For it to be an AR(p) model 
+# For it to be an MA(q) model
+
 # Try your chosen model(s), and use the AICc to search for a better model.
 # Check the residuals from your chosen model by plotting the ACF of the residuals, and doing a portmanteau test of the residuals. If they do not look like white noise, try a modified model.
 # Once the residuals look like white noise, calculate forecasts.
+
+auto.arima(in_sample_data)
 
