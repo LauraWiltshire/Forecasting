@@ -194,13 +194,13 @@ auto <- auto.arima(train_ARIMA, stepwise = FALSE)
 # like white noise, try a modified model.
 # Once the residuals look like white noise, calculate forecasts.
 checkresiduals(arima010010)  # small p-value, not white-noise, so remove
-checkresiduals(arima110110)  # large p-value, white noise
-checkresiduals(arima011011)  # large p-value, white noise
-checkresiduals(auto)  # large p-value, white noise
+checkresiduals(arima110110)  # p = 0.1588, white noise
+checkresiduals(arima011011)  # p = 0.3354, white noise
+checkresiduals(auto)  # p = 0.4288, white noise [best]
 
 # Testing the models against in-sample validation data (test_ARIMA)
 # ARIMA(1,1,0)(1,1,0)[4] had the lowest mean absolute scaled error (MASE)
-accuracy(forecast(arima110110, h = 8), test_ARIMA)  # MASE = 0.4772776
+accuracy(forecast(arima110110, h = 8), test_ARIMA)  # MASE = 0.4772776 [best]
 accuracy(forecast(arima011011, h = 8), test_ARIMA)  # MASE = 2.0404656
 accuracy(forecast(auto, h = 8), test_ARIMA)  # MASE = 2.0477586
 
@@ -209,7 +209,7 @@ best_mase <- Arima(in_sample_data, order = c(1,1,0), seasonal = c(1,1,0))
 third_arima <- Arima(in_sample_data, order = c(0,1,1), seasonal = c(0,1,1))
 best_aicc <- Arima(in_sample_data, order = c(0,1,0), seasonal = c(0,1,1))
 accuracy(forecast(best_mase, h = 8), out_sample_data)  # MASE = 2.6744393
-accuracy(forecast(third_arima, h = 8), out_sample_data)  # MASE = 2.1224180
+accuracy(forecast(third_arima, h = 8), out_sample_data)  # MASE = 2.1224180 ['best']
 accuracy(forecast(best_aicc, h = 8), out_sample_data)  # MASE = 2.1482249
 
 # Plotting the models
@@ -230,3 +230,7 @@ lines(out_sample_data, lty = 2, lwd = 2)
 legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        col = c("black", "black", "#31A9F6"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
+
+# All perform quite badly at forecasting, due to the upswing in 'future' data
+# However, ARIMA(0,1,0)(0,1,1)[4] (auto.arima) had the best AICc, therefore 
+# I would select this as the 'best' ARIMA model for the data.
