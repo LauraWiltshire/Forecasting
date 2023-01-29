@@ -15,6 +15,7 @@ library(Mcomp)
 library(forecast)
 library(tidyverse)
 library(tseries)
+library(MTS)
 
 # Loading the data from series ID 1357 of the M3 competition 
 data <- M3[[1357]]
@@ -112,35 +113,36 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
        col = c("black", "black", "#31A9F6"),
        lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
-# ARIMA model
+# Seasonal ARIMA model
 # Plot the data. Identify any unusual observations.
 tsdisplay(in_sample_data)
 # ACF slow fall, PACF significant at lag 1, so AR(1)
 
-# If necessary, transform the data (using a log or a Box-Cox transformation) 
-# to stabilise the variance.
-
-ndiffs(in_sample_data)  # "I(1) series"
-nsdiffs(in_sample_data)  # required degree of differencing is 1
+# AR & MA models require stationary time series, otherwise they overestimate R-squared 
+# The time-series is stationary if these conditions are met:
+# It has a constant mean.
+# It has a constant standard deviation.
+# There is no seasonality 
+# We can check if it's stationary with an ADF or KPSS test
+adf.test(in_sample_data)  # p = 0.9, non-stationary
+kpss.test(in_sample_data)  # p-value smaller than printed value, non-stationary
 
 # The data are non-stationary, with seasonality, so we will take the seasonal 
 # difference 
 in_sample_data %>%
   diff(lag = 4) %>%  # diff at lag 4
   tsdisplay()
+adf.test(diff(in_sample_data, 4))  # p = 0.01877, stationary
+kpss.test(diff(in_sample_data, 4))  # p-value smaller than printed value, non-stationary
 
-# Still appears non-stationary, so take an additional first difference
+# Still appears non-stationary, so we take an additional first difference
 in_sample_data %>%
   diff(lag = 4) %>% #  seasonal diff
   diff() %>% # first diff 
   tsdisplay()
-
 differenced <- diff(diff(in_sample_data, 4), 1)
-
-# Test differenced data for stationarity
-adf.test(differenced)  # p-value smaller than printed value, so non-stationary
-kpss.test(differenced)  # p-value greater than printed value, so non-stationary
-
+adf.test(differenced)  # p-value smaller than printed value, so stationary
+kpss.test(differenced)  # p-value greater than printed value, so stationary
 
 # Plot of time-series data before and after differencing
 diff_vs_no_diff <- cbind("Original Data" = in_sample_data,
@@ -151,20 +153,80 @@ autoplot(diff_vs_no_diff, facets=TRUE) +
   xlab("Time") +
   ggtitle("Employment")
 
+# Checking for constant variance with the ARCH test
+archTest(differenced) # non-significant, therefore constant variance
+
+# Autocorrelation is the correlation between a time series and a delayed 
+# version of itself, while the ACF plots the correlation coefficient against the 
+# lag, and it’s a visual representation of autocorrelation.
+# Partial autocorrelation captures the correlation between two variables after 
+# controlling for the effects of other variables. 
+
 # ACF and PACF plots for first and quarterly differenced data
 tsdisplay(differenced)
-# ACF: significant spikes at lags 3, 4, 5, 9, 13
-# PCF: significant spikes at lags 3, 4, 8, 9, 12
+# ACF: significant spikes at lags 3, 4, 5, 9, 13 (complicated)
+# PACF: significant spikes at lags 3, 4, 8, 9, 12 (seasonal 4, 8, 12)
+# PACF has a faster drop off than ACF which appears more geometric = AR(p) 
+# so AR(p) model may fit better than MA(q)
+# First guesses ARIMA(pdq)(PDQ)m:
+# d = 1, D = 1 due to differencing
+# ARIMA(0,1,0)(0,1,0)4 only focusing on the differencing
+# ARIMA(1,1,0)(1,1,0)4 due to seasonal component at lag 4 in the PACF
+# ARIMA(0,1,1)(0,1,1)4 due to seasonal component at lag 4 in the ACF
 
-# Examine the ACF/PACF: Is an AR(p) or MA(q) model appropriate?
-# For it to be an AR(p) model 
-# For it to be an MA(q) model
+# Finding an appropriate ARIMA model
+# Train and test samples from in_sample_data
+train_ARIMA <- head(in_sample_data, length(in_sample_data) - length(out_sample_data))
+test_ARIMA <- tail(in_sample_data, length(out_sample_data))
 
-# Try your chosen model(s), and use the AICc to search for a better model.
-# Check the residuals from your chosen model by plotting the ACF of the residuals, and doing a portmanteau test of the residuals. If they do not look like white noise, try a modified model.
+# auto.arima() came up with the best model (for AICc), ARIMA(0,1,0)(0,1,1)[4] 
+arima010010 <- Arima(train_ARIMA, order = c(0,1,0), seasonal = c(0,1,0))
+  summary(arima010010)  # AICc = 606.79
+arima110110 <- Arima(train_ARIMA, order = c(1,1,0), seasonal = c(1,1,0))
+  summary(arima110110)  # AICc = 599.75 
+arima011011 <- Arima(train_ARIMA, order = c(0,1,1), seasonal = c(0,1,1))
+  summary(arima011011)  # AICc = 592.01 
+auto <- auto.arima(train_ARIMA, stepwise = FALSE)
+  auto  # AICc = 589.75
+
+# Check the residuals from your chosen model by plotting the ACF of the 
+# residuals, and doing a portmanteau test of the residuals. If they do not look
+# like white noise, try a modified model.
 # Once the residuals look like white noise, calculate forecasts.
+checkresiduals(arima010010)  # small p-value, not white-noise, so remove
+checkresiduals(arima110110)  # large p-value, white noise
+checkresiduals(arima011011)  # large p-value, white noise
+checkresiduals(auto)  # large p-value, white noise
 
-auto.arima(in_sample_data)
+# Testing the models against in-sample validation data (test_ARIMA)
+# ARIMA(1,1,0)(1,1,0)[4] had the lowest mean absolute scaled error (MASE)
+accuracy(forecast(arima110110, h = 8), test_ARIMA)  # MASE = 0.4772776
+accuracy(forecast(arima011011, h = 8), test_ARIMA)  # MASE = 2.0404656
+accuracy(forecast(auto, h = 8), test_ARIMA)  # MASE = 2.0477586
 
-#hi
+# Testing the models against future data (out_sample_data)
+best_mase <- Arima(in_sample_data, order = c(1,1,0), seasonal = c(1,1,0))
+third_arima <- Arima(in_sample_data, order = c(0,1,1), seasonal = c(0,1,1))
+best_aicc <- Arima(in_sample_data, order = c(0,1,0), seasonal = c(0,1,1))
+accuracy(forecast(best_mase, h = 8), out_sample_data)  # MASE = 2.6744393
+accuracy(forecast(third_arima, h = 8), out_sample_data)  # MASE = 2.1224180
+accuracy(forecast(best_aicc, h = 8), out_sample_data)  # MASE = 2.1482249
 
+# Plotting the models
+plot(forecast(best_mase, h = 8, level = c(0.8, 0.95)))
+lines(out_sample_data, lty = 2, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
+
+plot(forecast(third_arima, h = 8, level = c(0.8, 0.95)))
+lines(out_sample_data, lty = 2, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
+
+plot(forecast(best_aicc, h = 8, level = c(0.8, 0.95)))
+lines(out_sample_data, lty = 2, lwd = 2)
+legend("topright", c("Historical data", "Actual future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
