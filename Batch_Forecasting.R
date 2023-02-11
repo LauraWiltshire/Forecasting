@@ -31,8 +31,13 @@ library(smooth)
 # MAPE, sMAPE, MASE
 
 
-# Auto-theta model
+# Defining which M3 competition time series to use
+
 time_series_set <- 1001:1100
+
+
+# Auto-theta model
+
 MAPEs_theta <- rep()
 sMAPE_theta <- rep()
 
@@ -46,8 +51,11 @@ for (tsi in time_series_set){
   sMAPE_theta <- append(sMAPE, 200 * mean(abs(future_data - theta_forecast)/(future_data + theta_forecast)))
 }
 
-mean(MAPEs_theta)
-mean(sMAPE_theta)
+mean(MAPEs_theta)  # 5.553969
+sd(MAPEs_theta)  # 6.272906
+
+mean(sMAPE_theta)  # 5.303437
+sd(sMAPE_theta)  # 5.359509
 
 
 # Damped exponential smoothing
@@ -64,9 +72,11 @@ for (tsi in time_series_set){
   MAPEs_damped <- append(MAPEs_damped, 100 * mean(abs(future_data - damped_forecast)/abs(future_data)))
   sMAPE_damped <- append(sMAPE_damped, 200 * mean(abs(future_data - damped_forecast)/(future_data + damped_forecast)))
 }
-mean(MAPEs_damped)
-mean(sMAPE_damped)
+mean(MAPEs_damped)  # 4.672529
+sd(MAPEs_damped)  # 5.088035
 
+mean(sMAPE_damped)  # 4.539832
+sd(sMAPE_damped)  # 4.547428
 
 # Auto neural network model
 MAPEs_nnar <- rep()
@@ -82,9 +92,11 @@ for (tsi in time_series_set){
   sMAPE_nnar <- append(sMAPE_nnar, 200 * mean(abs(future_data - nnar_forecast)/(future_data + nnar_forecast)))
 }
 
-mean(MAPEs_nnar)
-mean(sMAPE_nnar)
+mean(MAPEs_nnar)  # 6.799899
+sd(MAPEs_nnar)  # 8.137133
 
+mean(sMAPE_nnar)  # 6.367925
+sd(sMAPE_nnar)  # 6.856817
 
 # Naive method benchmark
 
@@ -101,8 +113,11 @@ for (tsi in time_series_set){
   sMAPE_naive <- append(sMAPE_naive, 200 * mean(abs(future_data - naive_forecast)/(future_data + naive_forecast)))
 }
 
-mean(MAPEs_naive)
-mean(sMAPE_naive)
+mean(MAPEs_naive)  # 7.134864
+sd(MAPEs_naive)  # 7.58888
+
+mean(sMAPE_naive)  # 6.784217
+sd(sMAPE_naive)  # 6.086763
 
 
 # Auto-arima benchmark model
@@ -119,6 +134,10 @@ for (tsi in time_series_set){
   sMAPE_arima <- append(sMAPE_arima, 200 * mean(abs(future_data - arima_forecast)/(future_data + arima_forecast)))
 }
 
-mean(MAPEs_arima)
-mean(sMAPE_arima)
+mean(MAPEs_arima)  # 5.683726
+sd(MAPEs_arima)  # 6.3324
+
+mean(sMAPE_arima)  # 5.370717
+sd(sMAPE_arima)  # 5.429724
+
 
