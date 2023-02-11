@@ -22,6 +22,7 @@
 library(Mcomp)
 library(forecast)
 library(tidyverse)
+library(smooth)
 
 # The main advantage of scale dependent metrics is that they are usually easy to calculate and interpret. However, they can not be used to compare different series, because of their scale dependency (Hyndman, 2006)
 # Percentage Error Metrics solve this problem. They are scale independent and used to compare forecast performance between different time series. 
@@ -49,24 +50,22 @@ mean(MAPEs_theta)
 mean(sMAPE_theta)
 
 
+# Damped exponential smoothing
 
-# Auto-arima model
-MAPEs_arima <- rep()
-sMAPE_arima <- rep()
+MAPEs_damped <- rep()
+sMAPE_damped <- rep()
 
 for (tsi in time_series_set){
   historical_data <- M3[[tsi]]$x
   future_data <- M3[[tsi]]$xx
   horizon <- length(future_data)
-  arima_model <- auto.arima(historical_data)
-  arima_forecast <- forecast(arima_model, horizon)$mean
-  MAPEs_arima <- append(MAPEs_arima, 100 * mean(abs(future_data - arima_forecast)/abs(future_data)))
-  sMAPE_arima <- append(sMAPE_arima, 200 * mean(abs(future_data - arima_forecast)/(future_data + arima_forecast)))
+  damped_model <- ets(historical_data, damped = TRUE)
+  damped_forecast <- forecast(damped_model, horizon)$mean
+  MAPEs_damped <- append(MAPEs_damped, 100 * mean(abs(future_data - damped_forecast)/abs(future_data)))
+  sMAPE_damped <- append(sMAPE_damped, 200 * mean(abs(future_data - damped_forecast)/(future_data + damped_forecast)))
 }
-
-mean(MAPEs_arima)
-mean(sMAPE_arima)
-
+mean(MAPEs_damped)
+mean(sMAPE_damped)
 
 
 # Auto neural network model
@@ -86,4 +85,40 @@ for (tsi in time_series_set){
 mean(MAPEs_nnar)
 mean(sMAPE_nnar)
 
+
+# Naive method benchmark
+
+MAPEs_naive <- rep()
+sMAPE_naive <- rep()
+
+for (tsi in time_series_set){
+  historical_data <- M3[[tsi]]$x
+  future_data <- M3[[tsi]]$xx
+  horizon <- length(future_data)
+  naive_model <- naive(historical_data, h = horizon)
+  naive_forecast <- forecast(naive_model, horizon)$mean
+  MAPEs_naive <- append(MAPEs_naive, 100 * mean(abs(future_data - naive_forecast)/abs(future_data)))
+  sMAPE_naive <- append(sMAPE_naive, 200 * mean(abs(future_data - naive_forecast)/(future_data + naive_forecast)))
+}
+
+mean(MAPEs_naive)
+mean(sMAPE_naive)
+
+
+# Auto-arima benchmark model
+MAPEs_arima <- rep()
+sMAPE_arima <- rep()
+
+for (tsi in time_series_set){
+  historical_data <- M3[[tsi]]$x
+  future_data <- M3[[tsi]]$xx
+  horizon <- length(future_data)
+  arima_model <- auto.arima(historical_data)
+  arima_forecast <- forecast(arima_model, horizon)$mean
+  MAPEs_arima <- append(MAPEs_arima, 100 * mean(abs(future_data - arima_forecast)/abs(future_data)))
+  sMAPE_arima <- append(sMAPE_arima, 200 * mean(abs(future_data - arima_forecast)/(future_data + arima_forecast)))
+}
+
+mean(MAPEs_arima)
+mean(sMAPE_arima)
 
