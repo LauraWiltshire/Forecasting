@@ -89,6 +89,7 @@ legend("topright", c("Historical data", "Actual future data", "Forecast data"),
 # Validating performance of linear model
 accuracy(forecast(linear_model, h = 8), out_sample_data)
 
+
 # Fitting an exponential smoothing model
 # "A" = additive, "M" = multiplicative, "N" = none, "Z" = automatic
 # Better fitting models have lower AIC
@@ -109,8 +110,8 @@ MAN <- ets(in_sample_data, model = "MAN")
   summary(MAN)  # AIC = 904.0645
 MMN <- ets(in_sample_data, model = "MMN")
   summary(MMN)  # AIC = 903.6495
-MNM <- ets(in_sample_data, model = "MNM")
-  summary(MNM)  # AIC = 835.4538
+MNN <- ets(in_sample_data, model = "MNN")
+  summary(MNM)  # AIC = 901.4817
 # Trend better as N than M/A
 
 # Thirdly, changing the season type ("A", "M", or "N")
@@ -125,15 +126,14 @@ ANN <- ets(in_sample_data, model = "ANN")
 ZZZ <- ets(in_sample_data, model = "ZZZ")
 summary(ZZZ)
 
-# Graphically comparing forecasts produced by MNM and ANA exponential smoothing models
-plot(data, ylim = c(3600, 6000))
-lines(forecast(ANA, h = 8)$mean, col = "blue", lty = 1, lwd = 2)
-lines(forecast(MNM, h = 8)$mean, col = "green", lty = 1, lwd = 2)
-legend("topright", c("Historical data", "Actual future data", "MNM forecast data", "ANA forecast data"),
-       col = c("black", "red", "green", "blue"),
-       lwd = c(1, 1, 2, 2), lty = c(1, 1, 1, 1))
+# Graphically viewing forecasts produced by ANA exponential smoothing model
+plot(forecast(ANA, level = c(0.8, 0.95)), xlab = "Year")
+lines(out_sample_data, lwd = 2, lty = 2)
+legend("topright", c("Historical data", "Future data", "Forecast data"),
+       col = c("black", "black", "#31A9F6"),
+       lwd = c(1, 2, 2), lty = c(1, 2, 1))
 
-# Validating ANA and MNM exponential smoothing models, against the training and test sets
+# Validating ANA smoothing model against the training and test sets
 accuracy(forecast(ANA, h = 8), out_sample_data)
 accuracy(forecast(MNM, h = 8), out_sample_data)
 
