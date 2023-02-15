@@ -35,69 +35,6 @@ library(smooth)
 
 time_series_set <- 1001:1100
 
-
-# Auto-theta model
-
-MAPEs_theta <- rep()
-sMAPE_theta <- rep()
-
-for (tsi in time_series_set){
-  historical_data <- M3[[tsi]]$x
-  future_data <- M3[[tsi]]$xx
-  horizon <- length(future_data)
-  theta_model <- thetaf(historical_data, horizon)
-  theta_forecast <- forecast(theta_model, horizon)$mean
-  MAPEs_theta <- append(MAPEs, 100 * mean(abs(future_data - theta_forecast)/abs(future_data)))
-  sMAPE_theta <- append(sMAPE, 200 * mean(abs(future_data - theta_forecast)/(future_data + theta_forecast)))
-}
-
-mean(MAPEs_theta)  # 5.553969
-sd(MAPEs_theta)  # 6.272906
-
-mean(sMAPE_theta)  # 5.303437
-sd(sMAPE_theta)  # 5.359509
-
-
-# Damped exponential smoothing
-
-MAPEs_damped <- rep()
-sMAPE_damped <- rep()
-
-for (tsi in time_series_set){
-  historical_data <- M3[[tsi]]$x
-  future_data <- M3[[tsi]]$xx
-  horizon <- length(future_data)
-  damped_model <- ets(historical_data, damped = TRUE)
-  damped_forecast <- forecast(damped_model, horizon)$mean
-  MAPEs_damped <- append(MAPEs_damped, 100 * mean(abs(future_data - damped_forecast)/abs(future_data)))
-  sMAPE_damped <- append(sMAPE_damped, 200 * mean(abs(future_data - damped_forecast)/(future_data + damped_forecast)))
-}
-mean(MAPEs_damped)  # 4.672529
-sd(MAPEs_damped)  # 5.088035
-
-mean(sMAPE_damped)  # 4.539832
-sd(sMAPE_damped)  # 4.547428
-
-# Auto neural network model
-MAPEs_nnar <- rep()
-sMAPE_nnar <- rep()
-
-for (tsi in time_series_set){
-  historical_data <- M3[[tsi]]$x
-  future_data <- M3[[tsi]]$xx
-  horizon <- length(future_data)
-  nnar_model <- nnetar(historical_data)
-  nnar_forecast <- forecast(nnar_model, horizon)$mean
-  MAPEs_nnar <- append(MAPEs_nnar, 100 * mean(abs(future_data - nnar_forecast)/abs(future_data)))
-  sMAPE_nnar <- append(sMAPE_nnar, 200 * mean(abs(future_data - nnar_forecast)/(future_data + nnar_forecast)))
-}
-
-mean(MAPEs_nnar)  # 6.799899
-sd(MAPEs_nnar)  # 8.137133
-
-mean(sMAPE_nnar)  # 6.367925
-sd(sMAPE_nnar)  # 6.856817
-
 # Naive method benchmark
 
 MAPEs_naive <- rep()
@@ -139,5 +76,69 @@ sd(MAPEs_arima)  # 6.3324
 
 mean(sMAPE_arima)  # 5.370717
 sd(sMAPE_arima)  # 5.429724
+
+
+# Auto-theta model
+
+MAPEs_theta <- rep()
+sMAPE_theta <- rep()
+
+for (tsi in time_series_set){
+  historical_data <- M3[[tsi]]$x
+  future_data <- M3[[tsi]]$xx
+  horizon <- length(future_data)
+  theta_model <- thetaf(historical_data, horizon)
+  theta_forecast <- forecast(theta_model, horizon)$mean
+  MAPEs_theta <- append(MAPEs, 100 * mean(abs(future_data - theta_forecast)/abs(future_data)))
+  sMAPE_theta <- append(sMAPE, 200 * mean(abs(future_data - theta_forecast)/(future_data + theta_forecast)))
+}
+
+mean(MAPEs_theta)  # 5.553969
+sd(MAPEs_theta)  # 6.272906
+
+mean(sMAPE_theta)  # 5.303437
+sd(sMAPE_theta)  # 5.359509
+
+# Damped exponential smoothing
+
+MAPEs_damped <- rep()
+sMAPE_damped <- rep()
+
+for (tsi in time_series_set){
+  historical_data <- M3[[tsi]]$x
+  future_data <- M3[[tsi]]$xx
+  horizon <- length(future_data)
+  damped_model <- ets(historical_data, damped = TRUE)
+  damped_forecast <- forecast(damped_model, horizon)$mean
+  MAPEs_damped <- append(MAPEs_damped, 100 * mean(abs(future_data - damped_forecast)/abs(future_data)))
+  sMAPE_damped <- append(sMAPE_damped, 200 * mean(abs(future_data - damped_forecast)/(future_data + damped_forecast)))
+}
+mean(MAPEs_damped)  # 4.672529
+sd(MAPEs_damped)  # 5.088035
+
+mean(sMAPE_damped)  # 4.539832
+sd(sMAPE_damped)  # 4.547428
+
+# Auto neural network model
+MAPEs_nnar <- rep()
+sMAPE_nnar <- rep()
+
+for (tsi in time_series_set){
+  historical_data <- M3[[tsi]]$x
+  future_data <- M3[[tsi]]$xx
+  horizon <- length(future_data)
+  nnar_model <- nnetar(historical_data)
+  nnar_forecast <- forecast(nnar_model, horizon)$mean
+  MAPEs_nnar <- append(MAPEs_nnar, 100 * mean(abs(future_data - nnar_forecast)/abs(future_data)))
+  sMAPE_nnar <- append(sMAPE_nnar, 200 * mean(abs(future_data - nnar_forecast)/(future_data + nnar_forecast)))
+}
+
+mean(MAPEs_nnar)  # 6.799899
+sd(MAPEs_nnar)  # 8.137133
+
+mean(sMAPE_nnar)  # 6.367925
+sd(sMAPE_nnar)  # 6.856817
+
+
 
 
